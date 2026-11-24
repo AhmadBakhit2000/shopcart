@@ -1,51 +1,166 @@
 import { useState } from 'react'
 import { useApp } from '../context/AppContext.jsx'
+import Price from '../components/Price.jsx'
 
-/** Cart review + delivery form + order summary (coupon, tax, shipping, payment) + success modal */
 export default function Checkout() {
-  const { t, cart, setCart, setQty, remove, coupon, setCoupon, go } = useApp()
-  const [code, setCode] = useState(''), [pay, setPay] = useState('card'), [brand, setBrand] = useState('mc'), [done, setDone] = useState(null)
-  const sub = cart.reduce((s,i)=>s+i.price*i.qty,0), disc = coupon==='SAVE10' ? sub*0.1 : 0
-  const tax = (sub-disc)*0.1, ship = sub===0||sub>100 ? 0 : 9.99, total = sub-disc+tax+ship
-  const field = (k, type='text', ph) => <label className="block text-xs font-semibold">{t(k)}*<input required type={type} placeholder={ph||t('typeHere')} className="input mt-2 font-normal"/></label>
-  const submit = e => { e.preventDefault(); if (cart.length) setDone(String(Math.floor(1e9+Math.random()*9e9))) }
-  return <main className="max-w-7xl mx-auto px-4 py-6">
-    <nav className="text-xs text-gray-500 mb-6"><button onClick={()=>go('home')}>{t('home')}</button> / <b className="text-gray-900 dark:text-gray-100">{t('checkout')}</b></nav>
-    <form onSubmit={submit} className="grid lg:grid-cols-[1.7fr_1fr] gap-6 items-start">
-      <div className="space-y-5">
-        <section className="card p-5"><h2 className="text-xl font-bold mb-4">{t('review2')}</h2>
-          {cart.length===0 && <p className="text-sm text-gray-500">{t('empty')}</p>}
-          {cart.map((i,n) => <div key={n} className="flex items-center gap-6 py-3 border-b dark:border-gray-800 last:border-0">
-            <img src={i.img} alt={i.name} className="w-32 h-32 bg-soft dark:bg-gray-800 rounded object-contain"/>
-            <div className="flex-1"><p className="text-lg font-bold">{i.name}</p><p className="text-xs mt-2">{t('color')}: {i.color}</p></div>
-            <div className="text-end text-sm space-y-2"><p className="text-base font-bold">${(i.price*i.qty).toFixed(2)}</p>
-              <label className="font-semibold flex items-center gap-2 justify-end">{t('qty')}: <input type="number" min="1" value={i.qty} onChange={e=>setQty(n,+e.target.value)} className="w-14 rounded border dark:border-gray-700 bg-transparent px-2 py-1 text-xs"/></label>
-              <button type="button" onClick={()=>remove(n)} className="text-red-500 text-xs">{t('remove')}</button></div></div>)}</section>
-        <label className="flex items-center gap-3 text-sm"><input type="checkbox" className="w-4 h-4"/>{t('returning')}</label>
-        <section className="card p-5"><div className="flex items-center justify-between mb-5"><h2 className="text-xl font-bold">{t('deliveryInfo')}</h2><button type="button" className="chip">{t('saveInfo')}</button></div>
-          <div className="grid sm:grid-cols-2 gap-4">{field('first')}{field('last')}<div className="sm:col-span-2">{field('address')}</div>{field('city')}{field('zip')}{field('mobile','tel')}{field('email','email')}</div></section></div>
-      <aside className="space-y-5">
-        <div className="card p-5 space-y-5"><h2 className="text-xl font-bold pb-3 border-b dark:border-gray-800">{t('summary')}</h2>
-          <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-full p-1.5 ps-5"><input className="flex-1 bg-transparent text-xs outline-none min-w-0" placeholder={t('coupon')+' (SAVE10)'} value={code} onChange={e=>setCode(e.target.value)}/>
-            <button type="button" className="btn-primary !py-2 !text-xs whitespace-nowrap" onClick={()=>setCoupon(code.trim().toUpperCase())}>{t('apply')}</button></div>
-          <h3 className="font-semibold pt-3 border-t dark:border-gray-800">{t('payment')}</h3>
-          {['cod','scard','paypal','card'].map(v => <label key={v} className="flex items-center gap-3 text-sm"><input type="radio" name="pay" className="w-4 h-4 accent-green-600" checked={pay===v} onChange={()=>setPay(v)}/>{t(v)}</label>)}
-          {pay==='card' && <div className="space-y-4">
-            <div className="flex gap-2">{[['amazon','amazon'],['mc','●●'],['visa','VISA']].map(([k,l]) => <button type="button" key={k} onClick={()=>setBrand(k)} className={`h-10 w-20 rounded text-xs font-bold bg-gray-100 dark:bg-gray-800 border ${brand===k?'border-green-500':'border-transparent'} ${k==='mc'?'text-red-500 tracking-[-0.2em] text-lg':k==='visa'?'text-blue-800 italic text-sm':''}`}>{l}</button>)}</div>
-            {field('email','email')}{field('holder')}
-            <label className="block text-xs font-semibold">{t('number')}*<input required inputMode="numeric" placeholder="0000*****1245" className="input mt-2 font-normal"/></label>
-            <div className="grid grid-cols-2 gap-3"><label className="block text-xs font-semibold">{t('exp')}<input required placeholder="MM/YY" maxLength={5} className="input mt-2 font-normal"/></label>
-              <label className="block text-xs font-semibold">CVC<input required placeholder="000" maxLength={4} className="input mt-2 font-normal"/></label></div></div>}
-          <dl className="text-sm space-y-3 pt-3 border-t dark:border-gray-800">{[['sub',sub],['tax',tax],['disc',-disc],['ship',ship]].map(([k,v])=><div key={k} className="flex justify-between"><dt>{t(k)}</dt><dd>{v<0?'-':''}${Math.abs(v).toFixed(2)}</dd></div>)}
-            <div className="flex justify-between font-bold border-t pt-3 dark:border-gray-700"><dt>{t('total')}</dt><dd>${total.toFixed(2)}</dd></div></dl>
-          <button className="btn-primary w-full !py-3" disabled={!cart.length}>{t('payBtn')} ${total.toFixed(2)}</button></div>
-        <div className="rounded-lg bg-[#f3ede3] dark:bg-gray-900 p-4 flex items-center gap-4"><div className="w-20 h-12 rounded bg-brand text-white text-[8px] font-bold p-1.5">Shopcart</div>
-          <p className="text-sm"><b>{t('cashback')}</b><br/><a href="#" className="text-xs underline">{t('learnMore')}</a></p></div></aside></form>
-    {done && <div className="fixed inset-0 z-50 bg-black/40 grid place-items-center p-4" role="dialog" aria-modal="true">
-      <div className="bg-white dark:bg-gray-900 rounded-[32px] max-w-md w-full text-center overflow-hidden shadow-2xl">
-        <div className="h-52 grid place-items-center" style={{background:'radial-gradient(circle at 20% 40%,#a9b8ff 0,transparent 45%),radial-gradient(circle at 85% 20%,#c4f5d6 0,transparent 40%),linear-gradient(#eef2ff,#fff)'}}>
-          <div className="w-28 h-28 rounded-full bg-white/80 shadow-lg grid place-items-center"><div className="w-20 h-20 rounded-full bg-gradient-to-b from-green-300 to-green-500 grid place-items-center text-white text-4xl">✓</div></div></div>
-        <div className="px-8 pb-10 space-y-4"><h2 className="text-2xl font-bold">{t('ok')}</h2><p className="text-sm text-gray-600 dark:text-gray-300">{t('txn')}: {done}</p>
-          <button className="rounded-full bg-accent text-white px-8 py-3 text-sm font-semibold" onClick={()=>{setCart([]);setCoupon(null);setDone(null);go('home')}}>{t('cont')}</button></div></div></div>}
-  </main>
+  const { cart, setCart, setQty, remove, go, t, coupon, setCoupon } = useApp()
+  const [code, setCode] = useState('')
+  const [couponMsg, setCouponMsg] = useState(null)
+  const [pm, setPm] = useState('cc')
+  const [done, setDone] = useState(null)
+  const [form, setForm] = useState({ fn: '', ln: '', addr: '', city: '', zip: '', mob: '', email: '', holder: '', num: '', exp: '', cvc: '' })
+
+  const upd = (k) => (e) => setForm({ ...form, [k]: e.target.value })
+  const sub = cart.reduce((s, i) => s + i.price * i.qty, 0)
+  const disc = coupon ? sub * 0.1 : 0
+  const tax = (sub - disc) * 0.1
+  const ship = sub > 100 || sub === 0 ? 0 : 12
+  const total = Math.max(0, sub - disc + tax + ship)
+
+  const apply = () => {
+    if (code.trim().toUpperCase() === 'SAVE10') {
+      setCoupon('SAVE10')
+      setCouponMsg('valid')
+    } else {
+      setCoupon(null)
+      setCouponMsg('invalid')
+    }
+  }
+
+  const submit = (e) => {
+    e.preventDefault()
+    if (!cart.length) return
+    setDone(Date.now().toString().slice(-8))
+    setCart([])
+    setCoupon(null)
+  }
+
+  if (!cart.length && !done) {
+    return (
+      <div className="max-w-3xl mx-auto px-4 py-20 text-center">
+        <p className="text-lg font-semibold mb-4">{t('emptyCart')}</p>
+        <button type="button" onClick={() => go('home')} className="px-6 py-2.5 rounded-full bg-brand text-white text-sm font-medium">{t('continueShop')}</button>
+      </div>
+    )
+  }
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 py-6">
+      <nav className="text-xs text-slate-500 mb-5 flex items-center gap-1.5">
+        <button type="button" onClick={() => go('home')} className="hover:text-brand">{t('home')}</button>
+        <span>/</span>
+        <span className="text-slate-800 dark:text-slate-200 font-medium">Checkout</span>
+      </nav>
+
+      <form onSubmit={submit} className="grid lg:grid-cols-12 gap-6 items-start">
+        <div className="lg:col-span-7 space-y-5">
+          <div className="border border-slate-200 dark:border-slate-800 rounded-xl p-5">
+            <h2 className="font-bold text-base mb-4">{t('reviewItem')}</h2>
+            <div className="space-y-4">
+              {cart.map((i, n) => (
+                <div key={`${i.id}-${i.color}`} className="flex items-center gap-4 pb-4 border-b last:border-none border-slate-100 dark:border-slate-800">
+                  <div className="w-20 h-20 rounded-xl bg-surface dark:bg-slate-800 flex items-center justify-center p-2 shrink-0">
+                    <img src={i.img} alt={i.name} className="max-h-full object-contain mix-blend-multiply dark:mix-blend-normal" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-sm truncate">{i.name}</h3>
+                    <p className="text-xs text-slate-500 mt-0.5 capitalize">{t('fColor')}: {i.color}</p>
+                    <button type="button" onClick={() => remove(n)} className="text-xs text-rose-500 hover:underline mt-1">{t('remove')}</button>
+                  </div>
+                  <div className="text-end">
+                    <div className="font-bold text-sm"><Price amount={i.price * i.qty} /></div>
+                    <div className="mt-1.5 flex items-center gap-1 text-xs text-slate-500 justify-end">
+                      <span>{t('qty')}:</span>
+                      <input type="number" min="1" max="99" value={i.qty} onChange={(e) => setQty(n, +e.target.value)} className="w-12 text-center border border-slate-300 dark:border-slate-700 rounded py-0.5 bg-transparent font-semibold text-slate-900 dark:text-white" />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="border border-slate-200 dark:border-slate-800 rounded-xl p-5">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-bold text-base">{t('delInfo')}</h2>
+              <label className="flex items-center gap-2 text-xs text-slate-500 cursor-pointer">
+                <input type="checkbox" className="accent-brand rounded" /> {t('returning')}
+              </label>
+            </div>
+            <div className="grid sm:grid-cols-2 gap-3.5 text-xs">
+              <div><label className="block font-medium mb-1">{t('firstName')}*</label><input required value={form.fn} onChange={upd('fn')} placeholder="Type here..." className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-transparent" /></div>
+              <div><label className="block font-medium mb-1">{t('lastName')}*</label><input required value={form.ln} onChange={upd('ln')} placeholder="Type here..." className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-transparent" /></div>
+              <div className="sm:col-span-2"><label className="block font-medium mb-1">{t('address')}*</label><input required value={form.addr} onChange={upd('addr')} placeholder="Type here..." className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-transparent" /></div>
+              <div><label className="block font-medium mb-1">{t('city')}*</label><input required value={form.city} onChange={upd('city')} placeholder="Type here..." className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-transparent" /></div>
+              <div><label className="block font-medium mb-1">{t('zip')}*</label><input required pattern="[0-9]{4,10}" value={form.zip} onChange={upd('zip')} placeholder="Type here..." className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-transparent" /></div>
+              <div><label className="block font-medium mb-1">{t('mobile')}*</label><input required dir="ltr" type="tel" pattern="[+0-9 -]{7,18}" value={form.mob} onChange={upd('mob')} placeholder="+1 234 567 890" className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-transparent" /></div>
+              <div><label className="block font-medium mb-1">{t('email')}*</label><input required type="email" value={form.email} onChange={upd('email')} placeholder="name@example.com" className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-transparent" /></div>
+            </div>
+          </div>
+        </div>
+
+        <div className="lg:col-span-5 border border-slate-200 dark:border-slate-800 rounded-xl p-5 space-y-5">
+          <h2 className="font-bold text-base">{t('summary')}</h2>
+          <div>
+            <div className="flex gap-2">
+              <input value={code} onChange={(e) => setCode(e.target.value)} placeholder={t('couponPh')} className="flex-1 text-xs px-3.5 py-2.5 rounded-full bg-surface dark:bg-slate-800 outline-none" />
+              <button type="button" onClick={apply} className="px-4 py-2.5 rounded-full bg-brand hover:bg-brand-dark text-white text-xs font-medium shrink-0">{t('apply')}</button>
+            </div>
+            {couponMsg === 'valid' && <p className="text-[11px] text-emerald-600 mt-1.5 px-2">{t('couponApplied')}</p>}
+            {couponMsg === 'invalid' && <p className="text-[11px] text-rose-500 mt-1.5 px-2">{t('couponInvalid')}</p>}
+          </div>
+
+          <div className="border-t border-slate-100 dark:border-slate-800 pt-4">
+            <h3 className="font-bold text-sm mb-3">{t('payDetails')}</h3>
+            <div className="space-y-2 text-xs">
+              {[['cod', t('cod')], ['sc', t('shopcartCard')], ['pp', t('paypal')], ['cc', t('cc')]].map(([v, l]) => (
+                <label key={v} className="flex items-center gap-2.5 cursor-pointer">
+                  <input type="radio" name="pm" checked={pm === v} onChange={() => setPm(v)} className="accent-brand" />
+                  <span>{l}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {pm === 'cc' && (
+            <div className="space-y-3 text-xs pt-1">
+              <div><label className="block font-medium mb-1">{t('email')}*</label><input required type="email" placeholder="Type here..." className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-transparent" /></div>
+              <div><label className="block font-medium mb-1">{t('cardHolder')}*</label><input required value={form.holder} onChange={upd('holder')} placeholder="Full Name" className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-transparent" /></div>
+              <div><label className="block font-medium mb-1">{t('cardNum')}*</label><input required dir="ltr" inputMode="numeric" pattern="[0-9 ]{13,19}" maxLength={19} value={form.num} onChange={upd('num')} placeholder="0000 0000 0000 0000" className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-transparent" /></div>
+              <div className="grid grid-cols-2 gap-3">
+                <div><label className="block font-medium mb-1">{t('expiry')}*</label><input required dir="ltr" pattern="(0[1-9]|1[0-2])/[0-9]{2}" maxLength={5} value={form.exp} onChange={upd('exp')} placeholder="MM/YY" className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-transparent" /></div>
+                <div><label className="block font-medium mb-1">{t('cvc')}*</label><input required dir="ltr" inputMode="numeric" pattern="[0-9]{3,4}" maxLength={4} value={form.cvc} onChange={upd('cvc')} placeholder="123" className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-transparent" /></div>
+              </div>
+            </div>
+          )}
+
+          <div className="border-t border-slate-100 dark:border-slate-800 pt-4 space-y-2 text-xs">
+            <div className="flex justify-between text-slate-600 dark:text-slate-400"><span>{t('subTotal')}</span><Price amount={sub} /></div>
+            <div className="flex justify-between text-slate-600 dark:text-slate-400"><span>{t('tax')}</span><Price amount={tax} /></div>
+            <div className="flex justify-between text-slate-600 dark:text-slate-400"><span>{t('couponDisc')}</span><span>-${disc.toFixed(2)}</span></div>
+            <div className="flex justify-between text-slate-600 dark:text-slate-400"><span>{t('shippingCost')}</span><span>{ship === 0 ? t('free') : `$${ship.toFixed(2)}`}</span></div>
+            <div className="flex justify-between font-bold text-sm pt-2 border-t border-slate-100 dark:border-slate-800"><span>{t('total')}</span><Price amount={total} /></div>
+          </div>
+
+          <button type="submit" className="w-full py-3 rounded-full bg-brand hover:bg-brand-dark text-white text-sm font-semibold">{t('pay')} ${total.toFixed(2)}</button>
+
+          <div className="rounded-xl bg-[#f7ead9] dark:bg-amber-950/40 p-4 flex items-center justify-between">
+            <div><div className="font-bold text-sm text-slate-900 dark:text-white">{t('cashbackT')}</div><div className="text-xs text-slate-600 dark:text-slate-300">{t('cashbackS')}</div></div>
+            <div className="w-12 h-8 rounded bg-brand text-white text-[9px] font-bold flex items-center justify-center shadow">Shopcart</div>
+          </div>
+        </div>
+      </form>
+
+      {done && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl max-w-sm w-full p-8 text-center shadow-2xl">
+            <div className="w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-600 mx-auto flex items-center justify-center mb-4">
+              <svg className="w-8 h-8" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+            </div>
+            <h3 className="text-lg font-bold mb-1">{t('accepted')}</h3>
+            <p className="text-xs text-slate-500 mb-6">{t('txn')}: #{done}</p>
+            <button type="button" onClick={() => { setDone(null); go('home') }} className="px-6 py-2.5 rounded-full bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold">{t('continueShop')}</button>
+          </div>
+        </div>
+      )}
+    </div>
+  )
 }

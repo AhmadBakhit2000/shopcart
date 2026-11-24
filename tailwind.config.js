@@ -1,4 +1,30 @@
-// Tailwind config: class-based dark mode + brand colors from the design video
-export default { darkMode: 'class', content: ['./index.html','./src/**/*.{js,jsx}'],
-  theme: { extend: { colors: { brand: { DEFAULT:'#0b4a2a', light:'#e8f3ec' }, accent:'#f26b0f', star:'#16c60c', soft:'#f6f6f6' },
-    fontFamily: { en:['Inter','sans-serif'], ar:['Cairo','Tajawal','sans-serif'] } } } }
+/** @type {import('tailwindcss').Config} */
+export default {
+  content: ['./index.html', './src/**/*.{js,jsx}'],
+  darkMode: 'class',
+  theme: {
+    extend: {
+      colors: {
+        brand: { DEFAULT: '#003d29', dark: '#002a1c', light: '#e8f3ee' },
+        surface: '#f5f6f6',
+      },
+      fontFamily: {
+        en: ['Inter', 'system-ui', 'sans-serif'],
+        ar: ['Cairo', 'Tajawal', 'sans-serif'],
+      },
+    },
+  },
+  plugins: [
+    function ({ addUtilities }) {
+      addUtilities({
+        '.no-scrollbar': {
+          '-ms-overflow-style': 'none',
+          'scrollbar-width': 'none',
+          '&::-webkit-scrollbar': {
+            display: 'none',
+          },
+        },
+      })
+    },
+  ],
+}

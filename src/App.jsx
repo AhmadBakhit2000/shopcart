@@ -1,9 +1,26 @@
+import { lazy, Suspense } from 'react'
 import { useApp } from './context/AppContext.jsx'
-import Navbar from './components/Navbar.jsx'; import Footer from './components/Footer.jsx'
-import Home from './pages/Home.jsx'; import Product from './pages/Product.jsx'; import Checkout from './pages/Checkout.jsx'
-const pages = { home:Home, product:Product, checkout:Checkout }
-/** App shell: applies language font + dark-mode background, renders the active page */
+import Navbar from './components/Navbar.jsx'
+import Footer from './components/Footer.jsx'
+import Home from './pages/Home.jsx'
+
+const Product = lazy(() => import('./pages/Product.jsx'))
+const Checkout = lazy(() => import('./pages/Checkout.jsx'))
+
 export default function App() {
-  const { page, lang } = useApp(); const Page = pages[page.name]
-  return <div className={`min-h-screen bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 ${lang==='ar'?'font-ar':'font-en'}`}><Navbar/><Page key={page.name+page.id}/><Footer/></div>
+  const { page, lang } = useApp()
+
+  return (
+    <div className={`min-h-screen flex flex-col dark:[color-scheme:dark] ${lang === 'ar' ? 'font-ar' : 'font-en'}`}>
+      <Navbar />
+      <main key={`${page.name}-${page.id || ''}`} className="flex-1">
+        <Suspense fallback={<div className="py-20 text-center text-slate-500">Loading...</div>}>
+          {page.name === 'home' && <Home />}
+          {page.name === 'product' && <Product />}
+          {page.name === 'checkout' && <Checkout />}
+        </Suspense>
+      </main>
+      <Footer />
+    </div>
+  )
 }

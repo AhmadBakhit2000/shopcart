@@ -1,42 +1,165 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useApp } from '../context/AppContext.jsx'
-import { allProducts, popularCats } from '../data/products.js'
-import Stars from './Stars.jsx'
-import Price from './Price.jsx'
+import { categories, products, weekly } from '../data/products.js'
 
-/** Green info bar + main nav: logo, categories mega-dropdown, links, live search, account, cart badge */
-export default function Navbar() {
-  const { t, lang, setLang, dark, setDark, cart, go } = useApp()
-  const [open, setOpen] = useState(false), [q, setQ] = useState('')
-  const hits = q ? allProducts.filter(p => p.name.toLowerCase().includes(q.toLowerCase())).slice(0,5) : []
-  const count = cart.reduce((s,i) => s+i.qty, 0)
-  return <header className="sticky top-0 z-30 bg-white dark:bg-gray-950">
-    <div className="bg-brand text-white text-[11px]"><div className="max-w-7xl mx-auto px-4 py-2 flex items-center justify-between gap-3">
-      <span className="hidden sm:inline">📞 {t('phone')}</span>
-      <span className="mx-auto sm:mx-0">{t('promo')} <span className="mx-2">|</span><button onClick={()=>go('home')} className="underline">{t('shop')}</button></span>
-      <span className="flex items-center gap-4">
-        <button onClick={()=>setLang(lang==='en'?'ar':'en')} aria-label="Toggle language">{lang==='en'?'Eng':'عربي'} ▾</button>
-        <button onClick={()=>setDark(!dark)} aria-label="Toggle dark mode">{dark?'☀️':'🌙'}</button>
-        <span className="hidden sm:inline">{t('location')} ▾</span></span></div></div>
-    <div className="border-b border-gray-100 dark:border-gray-800"><div className="max-w-7xl mx-auto flex items-center gap-6 px-4 py-4">
-      <button onClick={()=>go('home')} className="flex items-center gap-2 text-2xl font-bold text-brand dark:text-green-400"><img src="/img/logo.png" alt="" className="h-8"/>Shopcart</button>
-      <nav className="hidden md:flex items-center gap-8 text-sm font-medium ms-6">
-        <div className="relative">
-          <button onClick={()=>setOpen(!open)} aria-expanded={open}>{t('categories')} ▾</button>
-          {open && <div className="absolute start-0 top-9 w-[440px] card p-5 shadow-xl">
-            <h3 className="font-semibold text-sm pb-3 border-b dark:border-gray-700">{t('popular')}</h3>
-            <div className="grid grid-cols-2 gap-3 mt-4">{popularCats.map(([k,label]) =>
-              <button key={k} onClick={()=>{setOpen(false);go('home')}} className="flex items-center gap-3 bg-soft dark:bg-gray-800 rounded-md p-2 text-start">
-                <img src={`/img/ic_${k}.jpg`} alt="" className="w-10 h-10 rounded"/><span><b className="block text-sm">{t(k)}</b><small className="text-[10px] text-gray-500">{t('itemsAvail')}</small></span></button>)}</div></div>}</div>
-        <button onClick={()=>go('home')}>{t('deals')}</button><button onClick={()=>go('home')}>{t('whatsNew')}</button><button onClick={()=>go('home')}>{t('delivery')}</button></nav>
-      <div className="relative flex-1 max-w-xs ms-auto">
-        <div className="flex items-center rounded-full bg-gray-100 dark:bg-gray-800 px-4 py-2">
-          <input value={q} onChange={e=>setQ(e.target.value)} placeholder={t('search')} className="w-full bg-transparent text-xs outline-none"/><span aria-hidden>🔍</span></div>
-        {hits.length>0 && <ul className="absolute end-0 top-12 w-[420px] max-w-[90vw] card p-3 shadow-xl">{hits.map(p =>
-          <li key={p.id}><button className="w-full flex items-center gap-4 p-2 border-b last:border-0 dark:border-gray-800 text-start" onClick={()=>{setQ(''); p.airpods||p.id<100 ? go('product',p.id) : go('home')}}>
-            <img src={p.img} alt="" className="w-10 h-10 bg-soft rounded object-contain"/><span className="flex-1 text-xs font-semibold">{p.name}</span><Stars rating={p.rating} reviews={p.reviews}/><span className="w-16 text-end text-xs"><Price value={p.price}/></span></button></li>)}</ul>}</div>
-      <span className="hidden sm:flex items-center gap-1 text-sm">👤 {t('account')}</span>
-      <button onClick={()=>go('checkout')} className="relative text-sm" aria-label={t('cart')}>🛒 {t('cart')}
-        {count>0 && <span className="absolute -top-2 -end-3 bg-accent text-white text-[10px] rounded-full w-4 h-4 grid place-items-center">{count}</span>}</button>
-    </div></div></header>
+export default function Navbar({ onSearch }) {
+  const { lang, setLang, dark, setDark, cart, go, t } = useApp()
+  const [open, setOpen] = useState(false)
+  const [q, setQ] = useState('')
+  const dropdownRef = useRef(null)
+
+  const count = cart.reduce((s, i) => s + i.qty, 0)
+  const all = [...products, ...weekly]
+  const hits = q.trim() ? all.filter((p) => p.name.toLowerCase().includes(q.toLowerCase())).slice(0, 5) : []
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  return (
+    <header className="sticky top-0 z-40 bg-white dark:bg-slate-950 border-b border-slate-100 dark:border-slate-800">
+      <div className="bg-brand text-white text-xs">
+        <div className="max-w-7xl mx-auto px-4 h-9 flex items-center justify-between gap-2">
+          <span className="flex items-center gap-1.5 opacity-95">
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" />
+            </svg>
+            <span dir="ltr">{t('phone')}</span>
+          </span>
+
+          <span className="hidden sm:inline">
+            {t('promo')} &nbsp;|&nbsp;{' '}
+            <button type="button" onClick={() => go('home')} className="underline font-medium">
+              {t('shopNow')}
+            </button>
+          </span>
+
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setLang(lang === 'en' ? 'ar' : 'en')}
+              className="hover:underline font-medium flex items-center gap-1"
+            >
+              {lang === 'en' ? 'العربية' : 'English'} ▾
+            </button>
+            <button
+              type="button"
+              onClick={() => setDark(!dark)}
+              aria-label="Toggle dark mode"
+              className="p-1 rounded hover:bg-white/10"
+            >
+              {dark ? '☀️' : '🌙'}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
+        <button type="button" onClick={() => go('home')} className="flex items-center gap-2 shrink-0">
+          <img src="/img/logo.png" alt="Shopcart logo" className="w-8 h-8 object-contain" />
+          <span className="text-xl font-extrabold text-brand dark:text-emerald-400 tracking-tight">Shopcart</span>
+        </button>
+
+        <nav className="hidden lg:flex items-center gap-6 text-sm font-medium text-slate-700 dark:text-slate-200">
+          <div className="relative" ref={dropdownRef}>
+            <button type="button" onClick={() => setOpen(!open)} className="flex items-center gap-1 hover:text-brand">
+              {t('categories')} ▾
+            </button>
+            {open && (
+              <div className="absolute start-0 mt-3 w-[440px] bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-slate-100 dark:border-slate-800 p-4 grid grid-cols-2 gap-2.5">
+                <div className="col-span-2 text-xs font-bold text-slate-500 pb-1 border-b border-slate-100 dark:border-slate-800">
+                  Popular Categories
+                </div>
+                {categories.map((c) => (
+                  <button
+                    key={c.key}
+                    type="button"
+                    onClick={() => {
+                      setOpen(false)
+                      go('home')
+                    }}
+                    className="flex items-center gap-3 p-2 rounded-lg hover:bg-surface dark:hover:bg-slate-800 text-start"
+                  >
+                    <img src={c.img} alt={t(c.key)} className="w-10 h-10 rounded-md object-cover" />
+                    <div>
+                      <div className="text-xs font-semibold">{t(c.key)}</div>
+                      <div className="text-[11px] text-slate-400">240 Item Available</div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+          <button type="button" onClick={() => go('home')} className="hover:text-brand">{t('deals')}</button>
+          <button type="button" onClick={() => go('home')} className="hover:text-brand">{t('whatsNew')}</button>
+          <button type="button" onClick={() => go('home')} className="hover:text-brand">{t('delivery')}</button>
+        </nav>
+
+        <div className="relative flex-1 max-w-xs hidden sm:block">
+          <input
+            value={q}
+            onChange={(e) => {
+              setQ(e.target.value)
+              onSearch?.(e.target.value)
+            }}
+            placeholder={t('searchPh')}
+            className="w-full text-xs bg-surface dark:bg-slate-800 rounded-full ps-4 pe-9 py-2 outline-none focus:ring-2 focus:ring-brand/30"
+          />
+          <svg className="w-4 h-4 text-slate-400 absolute end-3 top-2" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="8" />
+            <path d="m21 21-4.3-4.3" />
+          </svg>
+          {hits.length > 0 && (
+            <div className="absolute mt-1.5 w-full bg-white dark:bg-slate-900 rounded-xl shadow-lg border border-slate-100 dark:border-slate-800 overflow-hidden">
+              {hits.map((p) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => {
+                    setQ('')
+                    go('product', p.id)
+                  }}
+                  className="w-full flex items-center gap-2.5 px-3 py-2 text-xs hover:bg-surface dark:hover:bg-slate-800 text-start"
+                >
+                  <img src={p.img} alt={p.name} className="w-7 h-7 object-contain" />
+                  <span className="truncate flex-1">{p.name}</span>
+                  <span className="font-semibold">${p.price}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="flex items-center gap-5 text-sm font-medium">
+          <button type="button" onClick={() => go('home')} className="hidden md:flex items-center gap-1.5 hover:text-brand">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+              <circle cx="12" cy="7" r="4" />
+            </svg>
+            {t('account')}
+          </button>
+
+          <button type="button" onClick={() => go('checkout')} className="relative flex items-center gap-1.5 hover:text-brand">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <circle cx="9" cy="21" r="1" />
+              <circle cx="20" cy="21" r="1" />
+              <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+            </svg>
+            <span>{t('cart')}</span>
+            {count > 0 && (
+              <span className="ms-0.5 px-1.5 py-0.2 text-[11px] rounded-full bg-brand text-white font-bold">
+                {count}
+              </span>
+            )}
+          </button>
+        </div>
+      </div>
+    </header>
+  )
 }
