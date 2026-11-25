@@ -4,6 +4,8 @@ A full-featured, responsive e-commerce storefront upgraded and rebuilt with **Ne
 
 🔗 **Live Demo:** [shopcart-red-three.vercel.app](https://vercel.app)
 
+![Shopcart Preview](./public/img/preview.png)
+
 ---
 
 ## ✨ Key Features
@@ -47,10 +49,8 @@ A full-featured, responsive e-commerce storefront upgraded and rebuilt with **Ne
 ## 🚀 Getting Started Locally
 
 1. **Clone the repository:**
-   ```bash
-   git clone https://github.com
-   cd shopcart
-   ```
+   git clone https://github.com/AhmadBakhit2000/shopcart.git
+
 
 2. **Install dependencies:**
    ```bash
