@@ -16,6 +16,7 @@ const SWATCH: Record<string, string> = {
 
 export default function HomePage() {
   const { go, t } = useApp()
+  const [cat, setCat] = useState('')
   const [type, setType] = useState('')
   const [price, setPrice] = useState('')
   const [color, setColor] = useState('')
@@ -27,6 +28,7 @@ export default function HomePage() {
 
   const list = useMemo(() => {
     let filtered = [...products]
+    if (cat) filtered = filtered.filter((p) => p.cat.toLowerCase() === cat.toLowerCase())
     if (type) filtered = filtered.filter((p) => p.type === type)
     if (price) filtered = filtered.filter((p) => p.price <= +price)
     if (color) filtered = filtered.filter((p) => p.colors.includes(color))
@@ -38,11 +40,12 @@ export default function HomePage() {
     if (sort === 'desc') filtered.sort((a, b) => b.price - a.price)
     if (sort === 'rate') filtered.sort((a, b) => b.rating - a.rating)
     return filtered
-  }, [type, price, color, mat, offer, rev, sort])
+  }, [cat, type, price, color, mat, offer, rev, sort])
 
   const shown = pg === 1 ? list : [...list].reverse()
-  const active = type || price || color || mat || offer || rev
+  const active = cat || type || price || color || mat || offer || rev
   const reset = () => {
+    setCat('')
     setType('')
     setPrice('')
     setColor('')
@@ -71,11 +74,24 @@ export default function HomePage() {
       <section className="max-w-7xl mx-auto px-4 pt-12">
         <h2 className="text-xl font-bold mb-6">{t('topCats')}</h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-          {categories.map((c) => (
-            <button key={c.key} type="button" onClick={() => document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' })} className="group relative h-44 rounded-xl overflow-hidden shadow-sm">
-              <img src={c.img} alt={t(c.key)} className="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
-            </button>
-          ))}
+          {categories.map((c) => {
+            const catName = c.key.replace(/^cat/, '')
+            const isSelected = cat.toLowerCase() === catName.toLowerCase()
+            return (
+              <button
+                key={c.key}
+                type="button"
+                onClick={() => {
+                  setCat((prev) => (prev.toLowerCase() === catName.toLowerCase() ? '' : catName))
+                  setPg(1)
+                  document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' })
+                }}
+                className={`group relative h-44 rounded-xl overflow-hidden shadow-sm transition ${isSelected ? 'ring-4 ring-brand' : ''}`}
+              >
+                <img src={c.img} alt={t(c.key)} className="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
+              </button>
+            )
+          })}
         </div>
       </section>
 
@@ -112,7 +128,7 @@ export default function HomePage() {
           </select>
         </div>
 
-        <h2 className="text-xl font-bold mb-6">{t('headphoneForYou')}</h2>
+        <h2 className="text-xl font-bold mb-6">{cat ? t(`cat${cat}`) : t('headphoneForYou')}</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {shown.map((p) => (
             <ProductCard key={p.id} p={p} />
@@ -121,7 +137,6 @@ export default function HomePage() {
 
         <div className="flex items-center justify-center gap-2 mt-10">
           {[1, 2, 3, 4].map((n) => (
-
             <button key={n} type="button" onClick={() => setPg(n)} className={`w-8 h-8 rounded-full text-xs font-semibold transition ${pg === n ? 'bg-brand text-white' : 'bg-surface dark:bg-slate-800 hover:bg-slate-200'}`}>
               {n}
             </button>
