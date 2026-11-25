@@ -28,7 +28,7 @@ export default function HomePage() {
 
   const list = useMemo(() => {
     let filtered = [...products]
-    if (cat) filtered = filtered.filter((p) => p.cat.toLowerCase() === cat.toLowerCase())
+    if (cat) filtered = filtered.filter((p) => p.cat.replace(/\s+/g, '').toLowerCase() === cat.toLowerCase())
     if (type) filtered = filtered.filter((p) => p.type === type)
     if (price) filtered = filtered.filter((p) => p.price <= +price)
     if (color) filtered = filtered.filter((p) => p.colors.includes(color))
@@ -66,7 +66,7 @@ export default function HomePage() {
             </button>
           </div>
           <div className="flex justify-center md:justify-end">
-            <img src="/img/hero.png" alt="Hero Shopping" className="max-h-72 md:max-h-96 object-contain drop-shadow-xl" />
+            <img src="/img/hero.jpg" alt="Hero Shopping" className="max-h-72 md:max-h-96 object-contain drop-shadow-xl" />
           </div>
         </div>
       </section>
@@ -152,7 +152,7 @@ export default function HomePage() {
               {t('buyNow')}
             </button>
           </div>
-          <img src="/img/banner.png" alt="Promo" loading="lazy" className="h-44 sm:h-52 object-contain" />
+          <img src="/img/banner.jpg" alt="Promo" loading="lazy" className="h-44 sm:h-52 object-contain" />
         </div>
       </section>
 
@@ -169,9 +169,9 @@ export default function HomePage() {
         <h2 className="text-xl font-bold mb-6">{t('services')}</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {[
-            [t('s1t'), t('s1s'), '/img/srv-1.png'],
-            [t('s2t'), t('s2s'), '/img/srv-2.png'],
-            [t('s3t'), t('s3s'), '/img/srv-3.png'],
+            [t('s1t'), t('s1s'), '/img/s0.jpg'],
+            [t('s2t'), t('s2s'), '/img/s1.jpg'],
+            [t('s3t'), t('s3s'), '/img/s2.jpg'],
           ].map(([title, sub, img], i) => (
             <div key={i} className="rounded-xl bg-surface dark:bg-slate-900 overflow-hidden flex flex-col">
               <div className="p-6 flex-1">
