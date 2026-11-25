@@ -175,8 +175,8 @@ export default function HomePage() {
           ].map(([title, sub, img], i) => (
             <div key={i} className="rounded-xl bg-surface dark:bg-slate-900 overflow-hidden flex flex-col">
               <div className="p-6 flex-1">
-                <h3 className="font-bold text-base max-w-[200px] leading-snug">{title}</h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 max-w-[220px]">{sub}</p>
+                <h3 className="font-bold text-base max-w-50 leading-snug">{title}</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 max-w-55">{sub}</p>
               </div>
               <img src={img} alt={title} loading="lazy" className="w-full h-44 object-cover" />
             </div>
