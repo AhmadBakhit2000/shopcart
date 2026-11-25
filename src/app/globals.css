@@ -1,0 +1,20 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-brand: #003d29;
+  --color-brand-dark: #002a1c;
+  --color-brand-light: #e8f3ee;
+  --color-surface: #f5f6f6;
+  --font-en: var(--font-inter), system-ui, sans-serif;
+  --font-ar: var(--font-cairo), system-ui, sans-serif;
+}
+
+@utility no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
