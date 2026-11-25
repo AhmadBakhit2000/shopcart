@@ -1,23 +1,71 @@
-# Shopcart – React + Tailwind e-commerce UI
-Matches the reference video: Home → Product details → Checkout → Order accepted.
+# 🛒 Shopcart — Modern E-Commerce Web Application
 
-## Install
+A full-featured, responsive e-commerce storefront upgraded and rebuilt with **Next.js (App Router)**, **React 19**, **TypeScript**, and **Tailwind CSS**.
+
+🔗 **Live Demo:** [shopcart-red-three.vercel.app](https://vercel.app)
+
+---
+
+## ✨ Key Features
+
+- **Dynamic Product Catalog:** Filter products by category (*Tech, Furniture, Hand Bag, Books, Sneakers, Travel*), price range, customer rating, color swatches, material, and special offers.
+- **Interactive Product Details:** Dynamic routing (`/product/[id]`) with color variant image switching (e.g., AirPods Max), quantity selector, and detailed technical specifications.
+- **Shopping Cart & Checkout Flow:** Real-time cart state management using React Context API, item quantity updates, and a complete checkout experience.
+- **Bilingual Support (EN / AR):** Seamless switching between English and Arabic with full RTL/LTR layout adaptation.
+- **Dark & Light Mode:** Persistent theme toggle for comfortable browsing in any lighting condition.
+- **Responsive Design:** Mobile-first UI crafted with Tailwind CSS for seamless viewing across mobile, tablet, and desktop screens.
+
+---
+
+## 🛠️ Tech Stack
+
+- **Framework:** Next.js (App Router)
+- **Library:** React 19
+- **Language:** TypeScript
+- **Styling:** Tailwind CSS
+- **State Management:** React Context API
+- **Deployment:** Vercel
+
+---
+
+## 📂 Project Structure
+
+```text
+├── public/
+│   └── img/               # Product, category, and banner assets
+├── src/
+│   ├── app/               # Next.js App Router pages (Home, Product Details, Checkout)
+│   ├── components/        # Reusable UI components (Navbar, Footer, ProductCard, CartDrawer)
+│   ├── context/           # Global state management (Cart, Language, Theme)
+│   ├── data/              # Structured product catalog and categories
+│   └── types/             # TypeScript interfaces and type definitions
+└── package.json
 ```
-npm install
-npm run dev      # http://localhost:5173
-npm run build
-```
-## Structure
-- `src/context/AppContext.jsx` – language (RTL/LTR), dark mode, cart, coupon, tiny state router
-- `src/data/` – `i18n.js` (EN/AR strings), `products.js` (catalogue, weekly products, specs)
-- `src/components/` – Navbar (green bar, categories panel, live search), ProductCard, Stars, Price, Footer
-- `src/pages/` – Home, Product, Checkout (+ success modal)
-- `public/img/` – images cropped from the reference video (hero, banner, categories, products, services)
 
-## Features
-Hero, top categories, promo banner, filter chips (type/price/review/color/material/offer) + sort, paginated grid (8 per page), weekly popular, services cards, product page with colour-swapping gallery (AirPods Max), quantity, delivery check, spec tables, similar items, cart, coupon `SAVE10`, 10% tax, free shipping over $100, delivery + card forms, "Pay $X" button, cash-back banner, success modal. EN/AR + dark mode.
+---
 
-## Notes
-- Images are cropped from the video, so they are low/medium resolution; replace the files in `public/img/` with originals (same names) for sharper results.
-- Green/Blue/White AirPods variants are recoloured from the pink photo.
-- Category tile labels are baked into the images (English only).
+## 🚀 Getting Started Locally
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com
+   cd shopcart
+   ```
+
+2. **Install dependencies:**
+   ```bash
+   npm install
+   ```
+
+3. **Run the development server:**
+   ```bash
+   npm run dev
+   ```
+   Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+---
+
+## 👨‍💻 Author
+
+**AhmadAlmubarak Bakhit**  
+- GitHub: [@AhmadBakhit2000](https://github.com)
